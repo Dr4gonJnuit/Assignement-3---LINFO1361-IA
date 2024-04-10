@@ -1,0 +1,5 @@
+.venv
+__pycache__
+
+# Ignoring the output folder created by latex
+Rapport/Output
