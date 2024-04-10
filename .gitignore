@@ -2,4 +2,4 @@
 __pycache__
 
 # Ignoring the output folder created by latex
-Rapport/Output
+Report/Output
