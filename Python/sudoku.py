@@ -4,11 +4,6 @@ import math
 import sys
 
 
-def objective_score(board):
-    conflicts = count_conflicts(board)
-    empty_tiles = count_empty_tiles(board)
-    return conflicts + empty_tiles
-
 def count_conflicts(board):
     conflicts = 0
     size = len(board)
@@ -43,24 +38,10 @@ def count_empty_tiles(board):
     return sum(1 for row in board for cell in row if cell == 0)
 
 
-def generate_neighbor(board):
-    neighbor = [row[:] for row in board]
-    size = len(board)
-
-    empty_positions = [(i, j) for i in range(size) for j in range(size) if board[i][j] == 0]
-
-    if not empty_positions:
-        return board
-
-    row, col = random.choice(empty_positions)
-
-    for digit in range(1, 10):
-        neighbor[row][col] = digit
-
-        if not has_conflicts(neighbor, row, col):
-            return neighbor
-
-    return board
+def objective_score(board):
+    conflicts = count_conflicts(board)
+    empty_tiles = count_empty_tiles(board)
+    return conflicts + empty_tiles
 
 
 def has_conflicts(board, row, col):
@@ -83,12 +64,73 @@ def has_conflicts(board, row, col):
     return False
 
 
+def no_more_place_without_conflicts(board, initial_empty_positions):
+    neighbor = [row[:] for row in board]
+    size = len(board)
+    
+    empty_positions = [(i, j) for i in range(size) for j in range(size) if board[i][j] == 0]
+    
+    for position in empty_positions:
+        neighbor = generate_neighbor(neighbor, initial_empty_positions, position, False)
+    
+        if neighbor != board:
+            return False
+    
+    return True
+
+
+def generate_neighbor(board, initial_empty_positions, position=None, verif=True):
+    neighbor = [row[:] for row in board]
+    size = len(board)
+
+    if position is None:
+        empty_positions = [(i, j) for i in range(size) for j in range(size) if board[i][j] == 0]
+        try:
+            row, col = random.choice(empty_positions)
+        except IndexError:
+            return board
+    else:
+        row, col = position
+
+    """ # Verif if the try except is correct then delete this part
+    if not empty_positions:
+        return board
+    """
+    
+    previous_digit = 0
+    
+    if verif and no_more_place_without_conflicts(board, initial_empty_positions):
+        # TODO: Implement a backtracking mechanism to deleta a random neighbor and try to find a new one
+        position_to_delete = random.choice(initial_empty_positions)
+        previous_digit = neighbor[position_to_delete[0]][position_to_delete[1]]
+        neighbor[position_to_delete[0]][position_to_delete[1]] = 0
+    
+    digits = list(range(1, 10))
+    random.shuffle(digits)
+
+    for digit in digits:
+        if previous_digit == digit:
+            continue
+        neighbor[row][col] = digit
+
+        if not has_conflicts(neighbor, row, col):
+            return neighbor
+
+    return board
+
+
+def initial_position_empty(board):
+    return [(i, j) for i in range(len(board)) for j in range(len(board)) if board[i][j] == 0]
+
+
 def simulated_annealing_solver(initial_board):
     """
     Simulated annealing Sudoku solver.
     """
     current_solution = [row[:] for row in initial_board]
     best_solution = current_solution
+    
+    initial_empty_positions = initial_position_empty(initial_board)
 
     current_score = objective_score(current_solution)
     best_score = current_score
@@ -99,7 +141,7 @@ def simulated_annealing_solver(initial_board):
     while temperature > 0.0001:
         try:
             # TODO: Generate a neighbor (Don't forget to skip non-zeros tiles in the initial board ! It will be verified on Inginious.)
-            neighbor = generate_neighbor(current_solution)
+            neighbor = generate_neighbor(current_solution, initial_empty_positions)
 
             # Evaluate the neighbor
             neighbor_score = objective_score(neighbor)
@@ -150,7 +192,12 @@ if __name__ == "__main__":
 
     # Reading Sudoku from file
     initial_board = read_sudoku_from_file(sys.argv[1])
-
+    """
+    print_board(initial_board)
+    print("\n\n")
+    print_board(generate_neighbor(initial_board))
+    """
+        
     # Solving Sudoku using simulated annealing
     start_timer = time.perf_counter()
 

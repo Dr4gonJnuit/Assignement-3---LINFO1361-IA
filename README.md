@@ -37,6 +37,40 @@ Ceci est le code du troisième assignement pour le cour "LINFO1361 - Intelligenc
         1) TODO
         2) TODO
 
+# Répertoire
+
+```
+.
+├── Pdf
+│   └── Assignment_3_LINFO1361.pdf
+├── Python
+│   ├── Test
+│   ├── __pycache__
+│   │   ├── search.cpython-312.pyc
+│   │   └── utils.cpython-312.pyc
+│   ├── instances
+│   │   ├── i01
+│   │   ├── i02
+│   │   ├── i03
+│   │   ├── i04
+│   │   ├── i05
+│   │   ├── i06
+│   │   ├── i07
+│   │   ├── i08
+│   │   ├── i09
+│   │   └── i10
+│   ├── namazon.py
+│   ├── search.py
+│   ├── sudoku.py
+│   └── utils.py
+├── README.md
+├── Report
+│   ├── report.cls
+│   └── report_A3_group_052.tex
+└── Scripts
+    └── Makefile
+```
+
 # Résultats
 
 - Rapport : N/A
