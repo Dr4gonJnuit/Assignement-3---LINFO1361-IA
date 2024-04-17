@@ -116,6 +116,9 @@ def generate_neighbor(board, initial_empty_positions, position=None, verif=True)
         if not has_conflicts(neighbor, row, col):
             return neighbor
 
+    # TODO: There a problem, if we removed the digit, we will probably have the same digit in the next iteration
+    # So we need to add a condition to check if we can't find a new digit, we need to remove another digit until we find a new one
+
     return board
 
 
@@ -136,7 +139,7 @@ def simulated_annealing_solver(initial_board):
     best_score = current_score
 
     temperature = 1.0
-    cooling_rate = 0.999  # Adjust this parameter to control the cooling rate
+    cooling_rate = 0.9999  # Adjust this parameter to control the cooling rate
 
     while temperature > 0.0001:
         try:
