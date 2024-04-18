@@ -3,3 +3,4 @@ __pycache__
 
 # Ignoring the output folder created by latex
 Report/Output
+Pdf/report_A3_group_052.synctex.gz
