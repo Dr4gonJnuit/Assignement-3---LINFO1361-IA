@@ -64,7 +64,7 @@ def has_conflicts(board, row, col):
     return False
 
 
-def lock_check(board, empty_positions):
+def lock_check(board, locked_position):
     """Check if the board is locked and we can't add any new digit
 
     Args:
@@ -76,7 +76,7 @@ def lock_check(board, empty_positions):
     """
     initial_board = [row[:] for row in board]
     
-    for positions in empty_positions:
+    for positions in locked_position:
         checker_board = generate_neighbor(board, position=positions, verify_lock=False)
         
         if checker_board != initial_board:
@@ -85,18 +85,77 @@ def lock_check(board, empty_positions):
     return True
 
 
-def generate_neighbor(board, initial_empty_positions=None, position=None, verify_lock=True, debug=False):
+def missing_numbers(list, size=10):
+    return [x for x in range(1, size) if x not in list][0]
+    
+
+
+def generate_neighbor(board, locked_positions=None, forbiden_value=None, position=None, verify_lock=True, debug=False):
     neighbor = [row[:] for row in board]
     size = len(board)
 
     if position is None:
-        empty_positions = [(i, j) for i in range(size) for j in range(size) if board[i][j] == 0]
+        locked_position = [(i, j) for i in range(size) for j in range(size) if board[i][j] == 0]
         try:
-            row, col = random.choice(empty_positions)
+            row, col = random.choice(locked_position)
         except IndexError:
             return board
     else:
         row, col = position
+
+    # Lock the position if it's not in the locked positions
+    for pos_value in forbiden_value:
+        if forbiden_value[pos_value][0] == size - 1 and pos_value not in locked_positions:
+            locked_positions[pos_value] = True
+            
+            row, col = pos_value
+            neighbor[row][col] = forbiden_value[pos_value][1][0]
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     digits = list(range(1, 10))
     random.shuffle(digits)
@@ -107,7 +166,7 @@ def generate_neighbor(board, initial_empty_positions=None, position=None, verify
         if not has_conflicts(neighbor, row, col):
             return neighbor
     
-    if verify_lock and lock_check(board, empty_positions=empty_positions):
+    if verify_lock and lock_check(board, locked_position=locked_position):
         # TODO: remove numbers present in the board with the positions in the
         # ‘initial_empty_positions’ until we can add a different one
         old_empty_positions = initial_empty_positions.copy()
@@ -116,7 +175,6 @@ def generate_neighbor(board, initial_empty_positions=None, position=None, verify
         old_empty_positions_and_values = {pos: [] for pos in old_empty_positions}
         
         while old_empty_positions:
-            if debug: print("Empty position :\n", old_empty_positions) # Debug
             i, j = old_empty_positions.pop()
             
             old_empty_positions_and_values[(i, j)].append(neighbor[i][j])
@@ -135,8 +193,46 @@ def generate_neighbor(board, initial_empty_positions=None, position=None, verify
     return board
 
 
-def initial_position_empty(board):
-    return [(i, j) for i in range(len(board)) for j in range(len(board)) if board[i][j] == 0]
+def initial_position_information(board):
+    return {(i, j): True if board[i][j] != 0 else False for i in range(len(board)) for j in range(len(board))}
+
+
+def forbiden_numbers_positions(board, locked_position, unique_position=None):
+    """Generate a dictionary with the forbidden numbers for each empty position
+
+    Args:
+        board (List): The board to check
+    
+    Returns:
+        Dict : A dictionary with the forbidden numbers for each empty position and the number of forbidden numbers
+    """
+    size = len(board)
+    position = {pos: [0,[]] for pos in locked_position if locked_position[pos] == False}
+    
+    for pos in position:
+        if locked_position[pos]:
+            continue
+        
+        i, j = pos
+        
+        # Check the row
+        position[pos][1].extend([board[i][k] for k in range(size) if (board[i][k] != 0 and board[k][j] not in position[pos][1])])
+        
+        # Check the column
+        position[pos][1].extend([board[k][j] for k in range(size) if (board[k][j] != 0 and board[k][j] not in position[pos][1])])
+        
+        # Check the subgrid
+        subgrid_size = int(math.sqrt(size))
+        start_row = (i // subgrid_size) * subgrid_size
+        start_col = (j // subgrid_size) * subgrid_size
+        subgrid = [board[k][start_col:start_col + subgrid_size] for k in range(start_row, start_row + subgrid_size)]
+        position[pos][1].extend([cell for row in subgrid for cell in row if (cell != 0 and cell not in position[pos][1])])
+        
+        position[pos][1].sort()
+        
+        position[pos][0] = len(position[pos][1])        
+    
+    return position
 
 
 def simulated_annealing_solver(initial_board, debug=False):
@@ -146,8 +242,10 @@ def simulated_annealing_solver(initial_board, debug=False):
     current_solution = [row[:] for row in initial_board]
     best_solution = current_solution
     
-    initial_empty_positions = initial_position_empty(initial_board)
-
+    locked_positions, initial_position_empty = initial_position_information(initial_board) # Dict with the locked positions and the initial empty positions
+    
+    forbiden_numbers_positions_dict = forbiden_numbers_positions(initial_board, initial_position_empty)
+    
     current_score = objective_score(current_solution)
     best_score = current_score
 
@@ -157,7 +255,7 @@ def simulated_annealing_solver(initial_board, debug=False):
     while temperature > 0.0001:
         try:
             # TODO: Generate a neighbor (Don't forget to skip non-zeros tiles in the initial board ! It will be verified on Inginious.)
-            neighbor = generate_neighbor(current_solution, initial_empty_positions, debug=debug)
+            neighbor = generate_neighbor(current_solution, locked_positions, forbiden_numbers_positions_dict, debug=debug)
 
             # Evaluate the neighbor
             neighbor_score = objective_score(neighbor)
