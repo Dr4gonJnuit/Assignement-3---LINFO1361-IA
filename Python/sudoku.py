@@ -89,7 +89,6 @@ def missing_numbers(list, size=10):
     return [x for x in range(1, size) if x not in list][0]
     
 
-
 def generate_neighbor(board, locked_positions=None, forbiden_value=None, position=None, verify_lock=True, debug=False):
     neighbor = [row[:] for row in board]
     size = len(board)
