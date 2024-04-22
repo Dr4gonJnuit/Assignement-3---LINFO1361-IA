@@ -172,8 +172,18 @@ def simulated_annealing_solver(initial_board, debug=False):
     while temperature > 0.0001:
         try:
             # TODO: Generate a neighbor (Don't forget to skip non-zeros tiles in the initial board ! It will be verified on Inginious.)
+            
+            ##############################
+            
+            #   / \    These functions need to be modified so they             / \
+            #  / | \   wont generate a locked position after we begin         / | \
+            # /  °  \  to attributes random numbers to the empty positions.  /  °  \
+            
             locked_positions = initial_position_information(best_solution) # Dict with the locked positions and the initial empty positions
             forbiden_numbers_positions_dict = forbiden_numbers_positions(best_solution, locked_positions)
+            
+            ##############################
+            
             neighbor = generate_neighbor(best_solution, locked_positions, forbiden_numbers_positions_dict, debug=debug)
             
             # Evaluate the neighbor
