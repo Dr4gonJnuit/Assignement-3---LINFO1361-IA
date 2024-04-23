@@ -109,9 +109,34 @@ def generate_neighbor(board, locked_positions=None, forbiden_value=None, debug=F
             row, col = pos_value
             neighbor[row][col] = missing_numbers(forbiden_value[pos_value][1])[0]
             
-            return neighbor
+            return neighbor, True
     
-    return neighbor
+    # Generate a number for the locked position
+    # that only him can have
+    for pos_locked in locked_positions:
+        if not locked_positions[pos_locked]:
+            for possible_value in missing_numbers(forbiden_value[pos_locked][1]):
+                only_value = True
+                
+                for other_pos in locked_positions:
+                    if (not locked_positions[other_pos]) and (other_pos != pos_locked) and (possible_value not in forbiden_value[other_pos][1]):
+                        only_value = False
+                        break
+                if only_value:
+                    row, col = pos_locked
+                    neighbor[row][col] = possible_value
+                    
+                    return neighbor, True
+
+    
+    # Generate a random POSSIBLE position 
+    # That means we didn't find a position with 8 forbidden numbers
+    for pos_locked in locked_positions:
+        if not locked_positions[pos_locked]:
+            row, col = pos_locked
+            neighbor[row][col] = random.choice(missing_numbers(forbiden_value[pos_locked][1]))
+    
+    return neighbor, False
 
 
 def initial_position_information(board):
@@ -169,6 +194,8 @@ def simulated_annealing_solver(initial_board, debug=False):
     temperature = 1.0
     cooling_rate = 0.9999  # Adjust this parameter to control the cooling rate
     
+    locked = True
+    
     while temperature > 0.0001:
         try:
             # TODO: Generate a neighbor (Don't forget to skip non-zeros tiles in the initial board ! It will be verified on Inginious.)
@@ -179,12 +206,13 @@ def simulated_annealing_solver(initial_board, debug=False):
             #  / | \   wont generate a locked position after we begin         / | \
             # /  °  \  to attributes random numbers to the empty positions.  /  °  \
             
-            locked_positions = initial_position_information(best_solution) # Dict with the locked positions and the initial empty positions
-            forbiden_numbers_positions_dict = forbiden_numbers_positions(best_solution, locked_positions)
+            if locked:
+                locked_positions = initial_position_information(best_solution) # Dict with the locked positions and the initial empty positions
+                forbiden_numbers_positions_dict = forbiden_numbers_positions(best_solution, locked_positions)
             
             ##############################
             
-            neighbor = generate_neighbor(best_solution, locked_positions, forbiden_numbers_positions_dict, debug=debug)
+            neighbor, locked = generate_neighbor(best_solution, locked_positions, forbiden_numbers_positions_dict, debug=debug)
             
             # Evaluate the neighbor
             neighbor_score = objective_score(neighbor)
