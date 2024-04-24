@@ -2,5 +2,5 @@
     "latex-workshop.latex.outDir": "../Pdf",// "./Output",
     // "latex-workshop.latex.outDirPDF": "../Pdf", -> This does not work (っ °Д °;)っ
     "latex-workshop.latex.autoClean.run": "onBuilt",
-    "workbench.colorTheme": "Monokai"
+    "workbench.colorTheme": "Default Dark+"
 }

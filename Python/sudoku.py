@@ -131,6 +131,7 @@ def generate_neighbor(board, locked_positions=None, forbiden_value=None, debug=F
     
     # Generate a random POSSIBLE position 
     # That means we didn't find a position with 8 forbidden numbers
+    # TODO: Upgrade this part
     for pos_locked in locked_positions:
         if not locked_positions[pos_locked]:
             row, col = pos_locked
